@@ -5,7 +5,7 @@ export interface RepoRef {
   host: "github" | "gitlab";
   owner: string;
   name: string;
-  ref?: string;
+  ref?: string | undefined;
 }
 
 export function parseRepoUrl(input: string): RepoRef | null {

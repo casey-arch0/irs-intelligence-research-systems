@@ -73,7 +73,10 @@ export async function intakeLocalFolder(onProgress?: IntakeProgress): Promise<In
   let truncated = false;
 
   async function walk(dir: FileSystemDirectoryHandle, prefix: string) {
-    for await (const [name, handle] of dir.entries()) {
+    const iterable = dir as unknown as {
+      entries(): AsyncIterable<[string, FileSystemHandle]>;
+    };
+    for await (const [name, handle] of iterable.entries()) {
       const path = prefix ? `${prefix}/${name}` : name;
       if (isIgnored(path + "/")) continue;
       if (files.length >= MAX_FILES) {
