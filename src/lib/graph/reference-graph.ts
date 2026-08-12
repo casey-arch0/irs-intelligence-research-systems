@@ -43,7 +43,8 @@ export const referenceGraph: GraphData = (() => {
     { id: "user-rk", type: "user", label: "r.kessler" },
   ];
 
-  const edges: GraphData["edges"] = [
+  type E = GraphData["edges"][number];
+  const edges: [string, string, E["type"]][] = [
     ["repo", "dir-api", "contains"],
     ["repo", "dir-worker", "contains"],
     ["repo", "dir-web", "contains"],
@@ -92,9 +93,9 @@ export const referenceGraph: GraphData = (() => {
     nodes,
     edges: edges.map(([source, target, type], i) => ({
       id: `e${i}`,
-      source: source as string,
-      target: target as string,
-      type: type as GraphData["edges"][number]["type"],
+      source,
+      target,
+      type,
     })),
     source: { kind: "reference", label: "atlas-platform (reference system)" },
   };

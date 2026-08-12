@@ -10,7 +10,7 @@ export interface IntakeFile {
   path: string;
   size: number;
   /** Present only for text files small enough to analyze. */
-  text?: string;
+  text?: string | undefined;
 }
 
 export interface IntakeResult {

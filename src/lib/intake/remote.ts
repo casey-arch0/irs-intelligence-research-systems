@@ -28,7 +28,7 @@ export function parseRepoUrl(input: string): RepoRef | null {
   const refIndex = parts.findIndex((p) => p === "tree" || p === "-");
   const ref =
     refIndex >= 0 ? parts.slice(refIndex + (parts[refIndex] === "-" ? 2 : 1))[0] : undefined;
-  return { host, owner: parts[0], name: parts[1], ref };
+  return { host, owner: parts[0]!, name: parts[1]!, ref };
 }
 
 /**

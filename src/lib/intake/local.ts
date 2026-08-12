@@ -41,6 +41,7 @@ export async function intakeZip(
       break;
     }
     const data = entries[raw];
+    if (!data) continue;
     bytes += data.byteLength;
     files.push({
       path,
@@ -72,7 +73,6 @@ export async function intakeLocalFolder(onProgress?: IntakeProgress): Promise<In
   let truncated = false;
 
   async function walk(dir: FileSystemDirectoryHandle, prefix: string) {
-    // @ts-expect-error async iterator is available in supporting browsers
     for await (const [name, handle] of dir.entries()) {
       const path = prefix ? `${prefix}/${name}` : name;
       if (isIgnored(path + "/")) continue;
