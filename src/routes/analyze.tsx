@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AlertTriangle, Loader2, RotateCcw } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GraphCanvas, type GraphViewApi } from "@/components/graph/GraphCanvas";
 import { GraphControls } from "@/components/graph/GraphControls";
 import { NodeInspector } from "@/components/graph/NodeInspector";
@@ -9,6 +9,7 @@ import { Footer } from "@/components/site/Footer";
 import { Navigation } from "@/components/site/Navigation";
 import { analyzeCodebase, type AnalysisResult } from "@/lib/analysis/codebase-graph";
 import type { GraphMode } from "@/lib/graph/types";
+import { takePendingIntake } from "@/lib/intake/handoff";
 import type { IntakeResult } from "@/lib/intake/types";
 
 const title = "Analyze a Codebase — IRS";
@@ -70,6 +71,11 @@ function AnalyzePage() {
       }
     }, 30);
   }, []);
+
+  useEffect(() => {
+    const pending = takePendingIntake();
+    if (pending) handleIntake(pending);
+  }, [handleIntake]);
 
   const reset = useCallback(() => {
     setPhase("idle");

@@ -6,6 +6,7 @@ import { CodebaseIntake } from "@/components/site/CodebaseIntake";
 import { Footer } from "@/components/site/Footer";
 import { Navigation } from "@/components/site/Navigation";
 import { ProductCard } from "@/components/site/ProductCard";
+import { setPendingIntake } from "@/lib/intake/handoff";
 import { referenceGraph } from "@/lib/graph/reference-graph";
 import { products } from "@/lib/products";
 
@@ -187,7 +188,8 @@ function Index() {
               </p>
             </div>
             <CodebaseIntake
-              onResult={() => {
+              onResult={(result) => {
+                setPendingIntake(result);
                 void navigate({ to: "/analyze" });
               }}
               compact
