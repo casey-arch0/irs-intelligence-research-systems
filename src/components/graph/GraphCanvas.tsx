@@ -474,8 +474,9 @@ export function GraphCanvas({
   return (
     <div
       ref={containerRef}
-      className={className}
-      style={{ touchAction: "none", cursor: "grab", position: "relative" }}
+      className={cn("relative", className)}
+      style={{ touchAction: "none", cursor: "grab" }}
+
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
