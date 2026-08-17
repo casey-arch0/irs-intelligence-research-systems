@@ -48,30 +48,54 @@ function hash(str: string): number {
   return (h >>> 0) / 4294967295;
 }
 
-export function buildSimulation(data: GraphData, previous?: Simulation): Simulation {
+export function buildSimulation(
+  data: GraphData,
+  previous?: Simulation,
+  options: LayoutOptions = {},
+): Simulation {
   const degree = new Map<string, number>();
   for (const e of data.edges) {
     degree.set(e.source, (degree.get(e.source) ?? 0) + 1);
     degree.set(e.target, (degree.get(e.target) ?? 0) + 1);
   }
 
-  const nodes: SimNode[] = data.nodes.map((n, i) => {
+  // Stable ring of cluster anchors: related nodes settle in their own region.
+  const clusterKeys = [
+    ...new Set(data.nodes.map((n) => options.clusterOf?.get(n.id) ?? "root")),
+  ].sort();
+  const anchors = new Map<string, { x: number; y: number }>();
+  const ring = 300 + clusterKeys.length * 44;
+  clusterKeys.forEach((key, i) => {
+    if (key === "root") {
+      anchors.set(key, { x: 0, y: 0 });
+      return;
+    }
+    const a = (i / Math.max(1, clusterKeys.length)) * Math.PI * 2;
+    anchors.set(key, { x: Math.cos(a) * ring, y: Math.sin(a) * ring });
+  });
+
+  const nodes: SimNode[] = data.nodes.map((n) => {
     const prev = previous?.byId.get(n.id);
     const seed = hash(n.id);
     const angle = seed * Math.PI * 2;
-    const radius = 120 + (i % 17) * 34;
     const deg = degree.get(n.id) ?? 0;
+    const cluster = options.clusterOf?.get(n.id) ?? "root";
+    const tier = options.tierOf?.get(n.id) ?? 1;
+    const anchor = anchors.get(cluster) ?? { x: 0, y: 0 };
+    const spread = 60 + tier * 55;
     return {
       id: n.id,
-      x: prev?.x ?? n.position?.x ?? Math.cos(angle) * radius,
-      y: prev?.y ?? n.position?.y ?? Math.sin(angle) * radius,
+      x: prev?.x ?? n.position?.x ?? anchor.x + Math.cos(angle) * spread,
+      y: prev?.y ?? n.position?.y ?? anchor.y + Math.sin(angle) * spread,
       vx: 0,
       vy: 0,
-      z: n.position?.z ?? (seed - 0.5) * 0.8,
-      r: 5 + Math.min(14, Math.sqrt(deg) * 3) + (n.weight ?? 0) * 2,
+      z: n.position?.z ?? (0.6 - tier * 0.28) * 0.7,
+      r: (5 + Math.min(12, Math.sqrt(deg) * 2.6) + (n.weight ?? 0) * 2) * (tier === 0 ? 1.35 : tier === 1 ? 1.05 : 0.8),
       fixed: false,
       node: n,
       degree: deg,
+      cluster,
+      tier,
     };
   });
 
