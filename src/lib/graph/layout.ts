@@ -181,16 +181,34 @@ export function stepSimulation(sim: Simulation, dt = 1) {
             d2 = 0.25;
           }
           if (d2 > CELL * CELL * 4) continue;
-          const f = repulsion / d2;
           const d = Math.sqrt(d2);
+          // Radius-aware repulsion → real collision avoidance, plus extra
+          // separation between unrelated clusters.
+          const pad = n.r + m.r + 14;
+          const strength = n.cluster === m.cluster ? repulsion : repulsion * 1.9;
+          let f = strength / d2;
+          if (d < pad) f += (pad - d) * 0.9;
           n.vx += (ddx / d) * f * dt;
           n.vy += (ddy / d) * f * dt;
         }
       }
     }
-    // gentle centering
-    n.vx -= n.x * 0.0016;
-    n.vy -= n.y * 0.0016;
+
+    // Cluster cohesion toward the group's own anchor + live centroid.
+    const anchor = sim.anchors.get(n.cluster);
+    const centroid = centroids.get(n.cluster);
+    if (anchor) {
+      n.vx += (anchor.x - n.x) * 0.0045;
+      n.vy += (anchor.y - n.y) * 0.0045;
+    }
+    if (centroid) {
+      n.vx += (centroid.x - n.x) * 0.006;
+      n.vy += (centroid.y - n.y) * 0.006;
+    }
+    // Hierarchy: primary nodes hold the centre, detail drifts outward.
+    const pull = n.tier === 0 ? 0.006 : n.tier === 1 ? 0.0022 : 0.0006;
+    n.vx -= n.x * pull;
+    n.vy -= n.y * pull;
   }
 
   for (const e of edges) {
