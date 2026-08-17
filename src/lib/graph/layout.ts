@@ -125,12 +125,34 @@ export function buildSimulation(
   return { nodes, edges, byId, neighbors, incident, alpha: 1, anchors };
 }
 
-const CELL = 90;
+const CELL = 110;
+
+/** Below this the layout is considered settled and stops moving entirely. */
+export const ALPHA_MIN = 0.012;
+
+export function isSettled(sim: Simulation) {
+  return sim.alpha < ALPHA_MIN;
+}
 
 /** One physics step. Spatial hashing keeps repulsion near-linear for big graphs. */
 export function stepSimulation(sim: Simulation, dt = 1) {
   const { nodes, edges } = sim;
-  if (sim.alpha < 0.001) return;
+  if (sim.alpha < ALPHA_MIN) return;
+
+  // Cluster centroids — recomputed each step, cheap and keeps groups cohesive.
+  const centroids = new Map<string, { x: number; y: number; n: number }>();
+  for (const n of nodes) {
+    const c = centroids.get(n.cluster);
+    if (c) {
+      c.x += n.x;
+      c.y += n.y;
+      c.n++;
+    } else centroids.set(n.cluster, { x: n.x, y: n.y, n: 1 });
+  }
+  for (const c of centroids.values()) {
+    c.x /= c.n;
+    c.y /= c.n;
+  }
 
   const grid = new Map<string, SimNode[]>();
   for (const n of nodes) {
