@@ -234,7 +234,7 @@ export function stepSimulation(sim: Simulation, dt = 1) {
     }
   }
 
-  const damping = 0.82;
+  const damping = 0.78;
   for (const n of nodes) {
     if (n.fixed) {
       n.vx = 0;
