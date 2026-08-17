@@ -216,8 +216,12 @@ export function stepSimulation(sim: Simulation, dt = 1) {
     const dx = t.x - s.x;
     const dy = t.y - s.y;
     const d = Math.sqrt(dx * dx + dy * dy) || 0.001;
-    const rest = 70 + s.r + t.r;
-    const f = (d - rest) * 0.012;
+    // Containment binds tightly; loose relations stay long and quiet.
+    const kind = e.edge.type;
+    const base = kind === "contains" ? 58 : kind === "related-to" ? 130 : 96;
+    const rest = base + s.r + t.r;
+    const stiffness = kind === "contains" ? 0.02 : 0.009;
+    const f = (d - rest) * stiffness;
     const fx = (dx / d) * f;
     const fy = (dy / d) * f;
     if (!s.fixed) {
