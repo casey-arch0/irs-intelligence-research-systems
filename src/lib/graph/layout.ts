@@ -253,7 +253,50 @@ export function stepSimulation(sim: Simulation, dt = 1) {
     n.y += n.vy * sim.alpha * dt;
   }
 
-  sim.alpha *= 0.994;
+  sim.alpha *= 0.986;
+  if (sim.alpha < ALPHA_MIN) sim.alpha = 0;
+}
+
+/** Bounding box of the settled layout — used for automatic camera framing. */
+export function layoutBounds(sim: Simulation) {
+  if (sim.nodes.length === 0) return { minX: -1, minY: -1, maxX: 1, maxY: 1 };
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const n of sim.nodes) {
+    minX = Math.min(minX, n.x - n.r);
+    minY = Math.min(minY, n.y - n.r);
+    maxX = Math.max(maxX, n.x + n.r);
+    maxY = Math.max(maxY, n.y + n.r);
+  }
+  return { minX, minY, maxX, maxY };
+}
+
+/** Cluster hulls (centroid + radius) for the subtle containment halos. */
+export function clusterRegions(sim: Simulation) {
+  const groups = new Map<string, { x: number; y: number; r: number; count: number; tier: number }>();
+  const acc = new Map<string, { x: number; y: number; n: number; tier: number }>();
+  for (const n of sim.nodes) {
+    const a = acc.get(n.cluster);
+    if (a) {
+      a.x += n.x;
+      a.y += n.y;
+      a.n++;
+      a.tier = Math.min(a.tier, n.tier);
+    } else acc.set(n.cluster, { x: n.x, y: n.y, n: 1, tier: n.tier });
+  }
+  for (const [key, a] of acc) {
+    const cx = a.x / a.n;
+    const cy = a.y / a.n;
+    let r = 0;
+    for (const n of sim.nodes) {
+      if (n.cluster !== key) continue;
+      r = Math.max(r, Math.hypot(n.x - cx, n.y - cy) + n.r);
+    }
+    groups.set(key, { x: cx, y: cy, r: r + 26, count: a.n, tier: a.tier });
+  }
+  return groups;
 }
 
 export function reheat(sim: Simulation, amount = 0.6) {
