@@ -179,7 +179,7 @@ export function buildGraphView(
   }
 
   return {
-    data: { nodes, edges, source: data.source },
+    data: { nodes, edges, ...(data.source ? { source: data.source } : {}) },
     tier,
     cluster,
     hiddenChildren,
