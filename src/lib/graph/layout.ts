@@ -122,7 +122,7 @@ export function buildSimulation(
     incident.get(t.id)!.push(se);
   }
 
-  return { nodes, edges, byId, neighbors, incident, alpha: 1 };
+  return { nodes, edges, byId, neighbors, incident, alpha: 1, anchors };
 }
 
 const CELL = 90;
