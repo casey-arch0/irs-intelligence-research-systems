@@ -12,6 +12,15 @@ export interface SimNode {
   fixed: boolean;
   node: GraphNode;
   degree: number;
+  /** Spatial grouping key — related nodes settle together. */
+  cluster: string;
+  /** 0 = primary structure … 3 = deep detail. Drives size and layout radius. */
+  tier: number;
+}
+
+export interface LayoutOptions {
+  clusterOf?: Map<string, string>;
+  tierOf?: Map<string, number>;
 }
 
 export interface SimEdge {
