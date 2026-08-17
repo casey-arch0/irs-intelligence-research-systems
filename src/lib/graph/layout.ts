@@ -37,6 +37,8 @@ export interface Simulation {
   neighbors: Map<string, Set<string>>;
   incident: Map<string, SimEdge[]>;
   alpha: number;
+  /** Stable per-cluster anchor points used by the clustering force. */
+  anchors: Map<string, { x: number; y: number }>;
 }
 
 function hash(str: string): number {
